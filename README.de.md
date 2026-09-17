@@ -14,6 +14,15 @@ ungewöhnlicherweise, eine ehrliche Aufzeichnung dessen, was alles schiefging. D
 Fehlschläge erwiesen sich als der nützlichste Teil und sind daher ebenso sorgfältig
 dokumentiert wie die Erfolge.
 
+**Wo es die Modelle gibt**
+
+Alle drei sind auf dem Hugging Face Hub veröffentlicht, unter
+[huggingface.co/SaeedAngiz1](https://huggingface.co/SaeedAngiz1):
+[`shahnameh-qwen3-4b-fa-lora`](https://huggingface.co/SaeedAngiz1/shahnameh-qwen3-4b-fa-lora),
+[`shahnameh-qwen3-4b-multilingual-lora`](https://huggingface.co/SaeedAngiz1/shahnameh-qwen3-4b-multilingual-lora) und
+[`shahnameh-smollm2-360m`](https://huggingface.co/SaeedAngiz1/shahnameh-smollm2-360m).
+Wie man sie lädt, steht unter [Modelle ausführen](#modelle-ausführen).
+
 **Weiterführende Dokumentation**
 - [Wie der Datensatz entstand](docs/dataset-creation.de.md): erstellt mit Claude Code (Opus 5, besonders hoher Reasoning Aufwand)
 - [Unsloth und LoRA im Detail](docs/unsloth-lora.de.md): wie 4 Milliarden Parameter auf 16 GB passen
@@ -167,6 +176,8 @@ gemessen.
 | [`shahnameh-qwen3-4b-multilingual-lora`](https://huggingface.co/SaeedAngiz1/shahnameh-qwen3-4b-multilingual-lora) | Qwen3-4B-Instruct-2507 | LoRA r=16, 3 Epochen, fa/en/de | 142 MB | **Konsistenz**: saubere Schrift in allen 3 Sprachen |
 | [`shahnameh-smollm2-360m`](https://huggingface.co/SaeedAngiz1/shahnameh-smollm2-360m) | SmolLM2-360M | vollständiges Fine Tuning | 1,3 GB | **nur Englisch**; läuft auf CPU |
 
+Alle drei liegen auf dem Hugging Face Hub unter [SaeedAngiz1](https://huggingface.co/SaeedAngiz1); die Modellkarten tragen dieselben Messwerte wie diese README.
+
 ### Zur Konsistenz
 
 Die beiden Qwen3 Modelle stehen im Zielkonflikt, und genau das ist der Punkt.
@@ -292,6 +303,37 @@ Beides zusammen kann er nicht.
 ---
 
 ## Modelle ausführen
+
+### Von Hugging Face herunterladen
+
+Alle Modelle liegen auf dem Hugging Face Hub unter
+[SaeedAngiz1](https://huggingface.co/SaeedAngiz1). SmolLM2 ist ein vollständiger Satz
+Gewichte und lädt für sich allein. Die beiden Qwen3 Modelle sind LoRA Adapter und laden auf
+`Qwen/Qwen3-4B-Instruct-2507` auf, das der Hub mitholt.
+
+```python
+# SmolLM2, das vollständige Modell, CPU genügt
+from transformers import AutoModelForCausalLM, AutoTokenizer
+
+model_id = "SaeedAngiz1/shahnameh-smollm2-360m"
+tok = AutoTokenizer.from_pretrained(model_id)
+model = AutoModelForCausalLM.from_pretrained(model_id)
+```
+
+```python
+# Qwen3 Adapter auf dem Basismodell, GPU nötig
+from transformers import AutoModelForCausalLM
+from peft import PeftModel
+
+base = AutoModelForCausalLM.from_pretrained("Qwen/Qwen3-4B-Instruct-2507", device_map="auto")
+model = PeftModel.from_pretrained(base, "SaeedAngiz1/shahnameh-qwen3-4b-fa-lora")
+```
+
+Nur die Dateien holen, und SmolLM2 gleich dorthin legen, wo `ask_smollm2.py` es erwartet:
+
+```bash
+hf download SaeedAngiz1/shahnameh-smollm2-360m --local-dir smollm2-shahnameh-model
+```
 
 ### Lokal (SmolLM2, CPU, keine GPU nötig)
 

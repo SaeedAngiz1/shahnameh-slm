@@ -15,6 +15,15 @@
 صادقانه از هر چیزی است که اشتباه پیش رفت. شکست‌ها سودمندترین بخش از آب درآمدند، پس به همان
 دقتِ موفقیت‌ها مستند شده‌اند.
 
+**مدل‌ها را از کجا بگیریم**
+
+هر سه مدل روی Hugging Face Hub منتشر شده‌اند، در
+[huggingface.co/SaeedAngiz1](https://huggingface.co/SaeedAngiz1):
+[`shahnameh-qwen3-4b-fa-lora`](https://huggingface.co/SaeedAngiz1/shahnameh-qwen3-4b-fa-lora)،
+[`shahnameh-qwen3-4b-multilingual-lora`](https://huggingface.co/SaeedAngiz1/shahnameh-qwen3-4b-multilingual-lora) و
+[`shahnameh-smollm2-360m`](https://huggingface.co/SaeedAngiz1/shahnameh-smollm2-360m).
+راهنمای بارگذاری در بخش [اجرای مدل‌ها](#اجرای-مدل‌ها) آمده است.
+
 **مستندات تکمیلی**
 - [چگونگی ساخت مجموعه‌داده](docs/dataset-creation.fa.md): ساخته‌شده با Claude Code (مدل Opus 5، تلاش استدلالی بسیار بالا)
 - [آنسلاث و لورا با جزئیات](docs/unsloth-lora.fa.md): چگونه ۴ میلیارد پارامتر در ۱۶ گیگابایت جا می‌شود
@@ -157,6 +166,8 @@ SmolLM2 *خطای آموزش نبوده است*.
 | [`shahnameh-qwen3-4b-multilingual-lora`](https://huggingface.co/SaeedAngiz1/shahnameh-qwen3-4b-multilingual-lora) | Qwen3-4B-Instruct-2507 | LoRA r=16، ۳ دوره، fa/en/de | ۱۴۲ مگابایت | **یکدستی**: خط تمیز در هر سه زبان |
 | [`shahnameh-smollm2-360m`](https://huggingface.co/SaeedAngiz1/shahnameh-smollm2-360m) | SmolLM2-360M | آموزش کامل | ۱٫۳ گیگابایت | **فقط انگلیسی**؛ روی CPU اجرا می‌شود |
 
+هر سه مدل روی Hugging Face Hub و زیر نام [SaeedAngiz1](https://huggingface.co/SaeedAngiz1) قرار دارند؛ کارت مدل‌ها همان اعدادی را دارند که در این README آمده است.
+
 ### دربارهٔ یکدستی
 
 دو مدل Qwen3 در برابر هم داد و ستد می‌کنند و همین نکتهٔ اصلی است.
@@ -277,6 +288,46 @@ SmolLM2 *خطای آموزش نبوده است*.
 ---
 
 ## اجرای مدل‌ها
+
+### بارگیری از Hugging Face
+
+هر سه مدل روی Hugging Face Hub و زیر نام
+[SaeedAngiz1](https://huggingface.co/SaeedAngiz1) قرار دارند. مدل SmolLM2 یک مجموعهٔ کامل از
+وزن‌هاست و به‌تنهایی بار می‌شود. دو مدل Qwen3 آداپتور لورا هستند و روی
+`Qwen/Qwen3-4B-Instruct-2507` بار می‌شوند که Hub خودش آن را می‌گیرد.
+
+<div dir="ltr">
+
+```python
+# SmolLM2, the full model, CPU is enough
+from transformers import AutoModelForCausalLM, AutoTokenizer
+
+model_id = "SaeedAngiz1/shahnameh-smollm2-360m"
+tok = AutoTokenizer.from_pretrained(model_id)
+model = AutoModelForCausalLM.from_pretrained(model_id)
+```
+
+```python
+# Qwen3 adapter on top of the base model, GPU needed
+from transformers import AutoModelForCausalLM
+from peft import PeftModel
+
+base = AutoModelForCausalLM.from_pretrained("Qwen/Qwen3-4B-Instruct-2507", device_map="auto")
+model = PeftModel.from_pretrained(base, "SaeedAngiz1/shahnameh-qwen3-4b-fa-lora")
+```
+
+</div>
+
+برای گرفتن فایل‌ها بدون بارگذاری مدل، و قرار دادن SmolLM2 در همان مسیری که
+`ask_smollm2.py` انتظار دارد:
+
+<div dir="ltr">
+
+```bash
+hf download SaeedAngiz1/shahnameh-smollm2-360m --local-dir smollm2-shahnameh-model
+```
+
+</div>
 
 ### روی رایانهٔ خودتان (SmolLM2، پردازندهٔ مرکزی، بدون نیاز به GPU)
 

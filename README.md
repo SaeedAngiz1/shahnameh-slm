@@ -13,6 +13,15 @@ This repository contains the dataset, the training code, three trained models, a
 unusually, an honest record of everything that went wrong. The failures turned out to
 be the most useful part, so they are documented as carefully as the successes.
 
+**Where to get the models**
+
+All three are published on the Hugging Face Hub at
+[huggingface.co/SaeedAngiz1](https://huggingface.co/SaeedAngiz1):
+[`shahnameh-qwen3-4b-fa-lora`](https://huggingface.co/SaeedAngiz1/shahnameh-qwen3-4b-fa-lora),
+[`shahnameh-qwen3-4b-multilingual-lora`](https://huggingface.co/SaeedAngiz1/shahnameh-qwen3-4b-multilingual-lora) and
+[`shahnameh-smollm2-360m`](https://huggingface.co/SaeedAngiz1/shahnameh-smollm2-360m).
+Loading instructions are under [Running the models](#running-the-models).
+
 **Deeper documentation**
 - [How the dataset was built](docs/dataset-creation.md): created with Claude Code (Opus 5, extra high reasoning effort)
 - [Unsloth and LoRA in detail](docs/unsloth-lora.md): how 4 billion parameters fit in 16 GB
@@ -320,6 +329,38 @@ It cannot do both.
 ---
 
 ## Running the models
+
+### Downloading from Hugging Face
+
+Every model lives on the Hugging Face Hub under
+[SaeedAngiz1](https://huggingface.co/SaeedAngiz1). SmolLM2 is a complete set of
+weights and loads on its own. The two Qwen3 models are LoRA adapters and load on top of
+`Qwen/Qwen3-4B-Instruct-2507`, which the Hub fetches for you.
+
+```python
+# SmolLM2, the full model, CPU is enough
+from transformers import AutoModelForCausalLM, AutoTokenizer
+
+model_id = "SaeedAngiz1/shahnameh-smollm2-360m"
+tok = AutoTokenizer.from_pretrained(model_id)
+model = AutoModelForCausalLM.from_pretrained(model_id)
+```
+
+```python
+# Qwen3 adapter on top of the base model, GPU needed
+from transformers import AutoModelForCausalLM
+from peft import PeftModel
+
+base = AutoModelForCausalLM.from_pretrained("Qwen/Qwen3-4B-Instruct-2507", device_map="auto")
+model = PeftModel.from_pretrained(base, "SaeedAngiz1/shahnameh-qwen3-4b-fa-lora")
+```
+
+To fetch the files without loading them, and to put SmolLM2 where `ask_smollm2.py`
+expects it:
+
+```bash
+hf download SaeedAngiz1/shahnameh-smollm2-360m --local-dir smollm2-shahnameh-model
+```
 
 ### On your machine (SmolLM2, CPU, no GPU needed)
 
