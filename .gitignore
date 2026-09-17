@@ -1,0 +1,17 @@
+# Model weights live on the Hugging Face Hub, not here.
+# GitHub rejects files over 100 MB, and these run from 132 MB to 1.4 GB.
+smollm2-shahnameh-model/
+smollm2-shahnameh-model.zip
+qwen3-fa-only-run2/adapter/
+qwen3-shahnameh-lora/adapter_model.safetensors
+qwen3-shahnameh-lora/tokenizer.json
+qwen3-shahnameh-lora/vocab.json
+qwen3-shahnameh-lora/merges.txt
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# Local-only working notes, not for the public repo.
+STATUS.md
